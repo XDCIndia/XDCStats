@@ -1,6 +1,6 @@
 const config = {
   port: process.env.PORT || 2000,
-  wsSecret: process.env.WS_SECRET || 'xinfin_xdpos_hybrid_network_stats',
+  wsSecret: process.env.WS_SECRET || 'xdc_openscan_stats_2026',
   adminSecret: process.env.ADMIN_SECRET || '',
   logger: {
     verbosity: process.env.VERBOSITY? parseInt(process.env.VERBOSITY) : 1
