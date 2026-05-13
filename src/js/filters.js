@@ -460,6 +460,12 @@ angular.module('netStatsApp.filters', [])
 			tooltip.push(string);
 		}
 
+		// Consensus engine reported by the geth client (PR XDCIndia/go-ethereum#594).
+		// Older clients don't send this field; show "Unknown" rather than hiding it
+		// so operators can tell at a glance which nodes need an upgrade.
+		string = "Consensus: <b>" + (node.info.consensus && node.info.consensus !== '' ? node.info.consensus : 'Unknown') + "</b>";
+		tooltip.push(string);
+
 		if(node.info.port !== '') {
 			string = "Port: <b>" + (typeof node.info.port !== 'undefined' ? node.info.port : '30303') + "</b>";
 
@@ -542,6 +548,35 @@ angular.module('netStatsApp.filters', [])
 			return 'text-danger';
 
 		return 'hidden';
+	};
+})
+.filter('consensusEngine', function() {
+	// Formats a node's reported consensus engine for the dashboard.
+	// The geth client sends `info.consensus` in the hello payload
+	// (PR XDCIndia/go-ethereum#594). Older clients don't send it, so we
+	// fall back to "unknown". XDPoS is the expected value for XDC nodes;
+	// any other non-empty value is shown verbatim so devnet / experimental
+	// engines surface clearly.
+	return function(consensus) {
+		if (!consensus || consensus === '') return 'Unknown';
+		return consensus;
+	};
+})
+.filter('networkConsensus', function() {
+	// Picks the consensus engine for the network-level summary card.
+	// If every reporting node agrees, returns that label. Mixed networks
+	// (e.g., during an engine migration) get "mixed". No nodes connected
+	// yet returns "—".
+	return function(nodes) {
+		if (!nodes || nodes.length === 0) return '—';
+		var engines = {};
+		for (var i = 0; i < nodes.length; i++) {
+			var e = (nodes[i].info && nodes[i].info.consensus) || 'Unknown';
+			engines[e] = (engines[e] || 0) + 1;
+		}
+		var keys = Object.keys(engines);
+		if (keys.length === 1) return keys[0];
+		return 'mixed';
 	};
 })
 .filter('consensusClass', function() {
