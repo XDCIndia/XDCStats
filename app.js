@@ -201,7 +201,11 @@ api.on('connection', function (spark)
 			{
 				if(err !== null)
 				{
-					console.error('API', 'BLK', 'Block error:', err);
+					// Include the node id and block-number snapshot so operators
+					// can pinpoint which connected node is sending malformed
+					// reports (typical cause: a stale/desynced node sending
+					// heartbeats with no block.number).
+					console.error('API', 'BLK', 'Block error:', err, '— from node:', data.id, 'block#:', (data.block && data.block.number) || 'n/a');
 				}
 				else
 				{
